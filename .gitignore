@@ -1,0 +1,4 @@
+*.json
+!package.json
+misc/
+node_modules/
