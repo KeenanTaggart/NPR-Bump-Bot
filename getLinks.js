@@ -1,5 +1,5 @@
 
-// Set environment variable TIME at runtime, either to am or pm
+// Set environment variable TIME at runtime (am, pm, sat, or sun)
 
 var fs = require('fs');
 var request = require('request');
@@ -46,7 +46,6 @@ function passTrack(authToken) {
   var counter = 0;
   for (var i = 0; i < 5; i++) {
     var randomSong = Math.floor(Math.random() * (songs.tracks.length));
-    // console.log(songs.tracks[randomSong].track + " by " + songs.tracks[randomSong].artist);
     var formedUrl = 'https://api.spotify.com/v1/search?q=artist:' + fixedEncodeURIComponent(songs.tracks[randomSong].artist) + "%20track:" + fixedEncodeURIComponent(songs.tracks[randomSong].track) + "&type=track";
 
     options = {
@@ -58,16 +57,11 @@ function passTrack(authToken) {
       if (!error && response.statusCode == 200) {
         results = JSON.parse(body).tracks.total;
         if (results == 0) {
-          // console.log("No results for given track. Trying another...");
         }
         else {
           var returnedLink = JSON.parse(body).tracks.items[0].external_urls.spotify;
-          // console.log(returnedLink);
           if (!songLinks.includes(returnedLink)) {
             songLinks.push(returnedLink);
-          }
-          else {
-            // console.log("This track has already been chosen.");
           }
         }
       }
@@ -90,9 +84,6 @@ function processResults(songs) {
   if (songs.length == 0) {
     console.log("All search attempts failed. Try again later / with other songs.");
     // This could be the result of a failed scrape or NPR provided no information on the relevant pages
-  }
-  else {
-    // console.log("There were " + (5 - songs.length) + " failures out of 5 attempts.");
   }
   var songsJson = {
     "numRemain" : 0,
