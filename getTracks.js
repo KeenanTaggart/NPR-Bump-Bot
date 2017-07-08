@@ -1,9 +1,23 @@
+ 
+// Set environment variable TIME at runtime, either to am or pm
+
 var fs = require('fs');
 var request = require('request');
 var cheerio = require('cheerio');
-var json = {tracks: []};
 
-request('http://www.npr.org/programs/morning-edition/', function(error, response, html) {
+var json = {tracks: []};
+var targetUrl, targetFile;
+
+if (process.env.TIME == 'am') {
+  targetUrl = 'http://www.npr.org/programs/morning-edition/';
+  targetFile = 'amTracks.json';
+}
+else {
+  targetUrl = 'http://www.npr.org/programs/all-things-considered/';
+  targetFile = 'pmTracks.json';
+}
+
+request(targetUrl, function(error, response, html) {
   if(!error) {
     var $ = cheerio.load(html);
     $('.song-meta-wrap').each(function(index) {
@@ -14,7 +28,7 @@ request('http://www.npr.org/programs/morning-edition/', function(error, response
         thisSong.artist = songs.children().last().text();
         json.tracks.push(thisSong);
       }
-      fs.writeFile('amTracks.json', JSON.stringify(json, null, 3), function(err) {
+      fs.writeFile(targetFile, JSON.stringify(json, null, 3), function(err) {
         if(err) {
           console.log("An error happened during file operations.");
         }
