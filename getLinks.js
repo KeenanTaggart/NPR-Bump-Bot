@@ -8,11 +8,13 @@ var songs;
 if (process.env.TIME == 'am') {
   songs = JSON.parse(fs.readFileSync('amTracks.json', 'utf8'));
 }
-else {
+else if (process.env.TIME == 'pm') {
   songs = JSON.parse(fs.readFileSync('pmTracks.json', 'utf8'));
 }
+else {
+  songs = JSON.parse(fs.readFileSync('weekendTracks.json', 'utf8'));
+}
 
-//var songs = JSON.parse(fs.readFileSync('amTracks.json', 'utf8')); 
 var cred = JSON.parse(fs.readFileSync('spotifyCred.json', 'utf8'));
 
 var client_id = cred.client_id;
@@ -27,7 +29,6 @@ var token;
 
 request.post(options, function(error, response, body) {
   if (!error && response.statusCode == 200) {
-    // console.log("Successfully got the token.");
     var info = JSON.parse(body);
     token = info.access_token;
     passTrack(token);
@@ -45,7 +46,7 @@ function passTrack(authToken) {
   var counter = 0;
   for (var i = 0; i < 5; i++) {
     var randomSong = Math.floor(Math.random() * (songs.tracks.length));
-    console.log(songs.tracks[randomSong].track + " by " + songs.tracks[randomSong].artist);
+    // console.log(songs.tracks[randomSong].track + " by " + songs.tracks[randomSong].artist);
     var formedUrl = 'https://api.spotify.com/v1/search?q=artist:' + fixedEncodeURIComponent(songs.tracks[randomSong].artist) + "%20track:" + fixedEncodeURIComponent(songs.tracks[randomSong].track) + "&type=track";
 
     options = {
@@ -57,16 +58,16 @@ function passTrack(authToken) {
       if (!error && response.statusCode == 200) {
         results = JSON.parse(body).tracks.total;
         if (results == 0) {
-          console.log("No results for given track. Trying another...");
+          // console.log("No results for given track. Trying another...");
         }
         else {
           var returnedLink = JSON.parse(body).tracks.items[0].external_urls.spotify;
-          console.log(returnedLink);
+          // console.log(returnedLink);
           if (!songLinks.includes(returnedLink)) {
             songLinks.push(returnedLink);
           }
           else {
-            console.log("This track has already been chosen.");
+            // console.log("This track has already been chosen.");
           }
         }
       }
@@ -91,7 +92,7 @@ function processResults(songs) {
     // This could be the result of a failed scrape or NPR provided no information on the relevant pages
   }
   else {
-    console.log("There were " + (5 - songs.length) + " failures out of 5 attempts.");
+    // console.log("There were " + (5 - songs.length) + " failures out of 5 attempts.");
   }
   var songsJson = {
     "numRemain" : 0,

@@ -1,5 +1,5 @@
  
-// Set environment variable TIME at runtime, either to am or pm
+// Set environment variable TIME at runtime, either to am, pm, sat, or sun
 
 var fs = require('fs');
 var request = require('request');
@@ -12,9 +12,17 @@ if (process.env.TIME == 'am') {
   targetUrl = 'http://www.npr.org/programs/morning-edition/';
   targetFile = 'amTracks.json';
 }
-else {
+else if (process.env.TIME == 'pm') {
   targetUrl = 'http://www.npr.org/programs/all-things-considered/';
   targetFile = 'pmTracks.json';
+}
+else if (process.env.TIME == 'sat') {
+  targetUrl = 'http://www.npr.org/programs/weekend-edition-saturday/';
+  targetFile = 'weekendTracks.json';
+}
+else {
+  targetUrl = 'http://www.npr.org/programs/weekend-edition-sunday/';
+  targetFile = 'weekendTracks.json';
 }
 
 request(targetUrl, function(error, response, html) {
