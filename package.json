@@ -2,9 +2,8 @@
   "name": "npr-bump-bot",
   "version": "1.0.0",
   "description": "Gets page for latest edition of NPRs Morning Edition/All Things Considered and scrapes info of bump tracks, then passes them to Spotify via API. A few tracks are then posted to Twitter",
-  "main": "getTrack.js",
   "author": "Keenan Taggart",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "cheerio": "latest",
     "request": "latest"
