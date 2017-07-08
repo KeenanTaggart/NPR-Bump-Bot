@@ -1,7 +1,18 @@
+
+// Set environment variable TIME at runtime, either to am or pm
+
 var fs = require('fs');
 var request = require('request');
+var songs;
 
-var songs = JSON.parse(fs.readFileSync('amTracks.json', 'utf8'));       // This needs to vary
+if (process.env.TIME == 'am') {
+  songs = JSON.parse(fs.readFileSync('amTracks.json', 'utf8'));
+}
+else {
+  songs = JSON.parse(fs.readFileSync('pmTracks.json', 'utf8'));
+}
+
+//var songs = JSON.parse(fs.readFileSync('amTracks.json', 'utf8')); 
 var cred = JSON.parse(fs.readFileSync('spotifyCred.json', 'utf8'));
 
 var client_id = cred.client_id;
@@ -27,14 +38,14 @@ request.post(options, function(error, response, body) {
   }
 });
 
+// We make 5 search attempts. The end goal is to have 2 unique links to post, so 5 tries allows for a few duplicates or failed searches.
 function passTrack(authToken) {
   var results;
   var songLinks = [];
   var counter = 0;
-  for (var i = 0; i < 3; i++) {
+  for (var i = 0; i < 5; i++) {
     var randomSong = Math.floor(Math.random() * (songs.tracks.length));
     console.log(songs.tracks[randomSong].track + " by " + songs.tracks[randomSong].artist);
-    // var formedUrl = 'https://api.spotify.com/v1/search?q=artist:' + songs.tracks[randomSong].artist.replace(/\s/g, "+") + "%20track:" + songs.tracks[randomSong].track.replace(/\s/g, "+") + "&type=track";
     var formedUrl = 'https://api.spotify.com/v1/search?q=artist:' + fixedEncodeURIComponent(songs.tracks[randomSong].artist) + "%20track:" + fixedEncodeURIComponent(songs.tracks[randomSong].track) + "&type=track";
 
     options = {
@@ -49,8 +60,14 @@ function passTrack(authToken) {
           console.log("No results for given track. Trying another...");
         }
         else {
-          console.log(JSON.parse(body).tracks.items[0].external_urls.spotify);
-          songLinks.push(JSON.parse(body).tracks.items[0].external_urls.spotify);
+          var returnedLink = JSON.parse(body).tracks.items[0].external_urls.spotify;
+          console.log(returnedLink);
+          if (!songLinks.includes(returnedLink)) {
+            songLinks.push(returnedLink);
+          }
+          else {
+            console.log("This track has already been chosen.");
+          }
         }
       }
       else {
@@ -61,7 +78,7 @@ function passTrack(authToken) {
         console.log(response.body.error_description);
       }
       counter++;
-      if (counter == 3) {
+      if (counter == 5) {
         processResults(songLinks); 
       }
     });
@@ -69,15 +86,14 @@ function passTrack(authToken) {
 }
 
 function processResults(songs) {
-  console.log("In processResults function");
   if (songs.length == 0) {
     console.log("All search attempts failed. Try again later / with other songs.");
+    // This could be the result of a failed scrape or NPR provided no information on the relevant pages
   }
   else {
-    console.log("There were " + (3 - songs.length) + " failures out of 3 attempts.");
-    // console.log("Here's the first song: " + songs[0]); 
+    console.log("There were " + (5 - songs.length) + " failures out of 5 attempts.");
   }
-  songsJson = {
+  var songsJson = {
     "numRemain" : 0,
     "firstTrack" : songs[0],
     "secondTrack" : songs[1]
@@ -88,7 +104,7 @@ function processResults(songs) {
   else if (songs.length == 1) {
     songsJson.numRemain = 1;
   }
-  else {}
+  else {}                         // numRemain remains at default (0) and tweet script will skip majority of execution
   fs.writeFile('songLinks.json', JSON.stringify(songsJson, null, 3), function(err) {
     if (err) {
       console.log("An error happened when writing the track links to the file.");
