@@ -39,6 +39,35 @@ request.post(options, function(error, response, body) {
   }
 });
 
+/*
+// This gets links for all songs.
+function passTrack(authToken) {
+  var results;
+  var songLinks = [];
+  for (var i = 0; i < songs.tracks.length; i++) {
+    var formedUrl = 'https://api.spotify.com/v1/search?q=artist:' + fixedEncodeURIComponent(songs.tracks[i].artist) + '%20track:' + fixedEncodeURIComponent(songs.tracks[i].track) + '&type=track';
+    options = {
+      url: formedUrl,
+      headers: {"Authorization": "Bearer " + authToken}
+    };
+
+    request(options, function(error, response, body) {
+      if (!error && response.statusCode == 200) {
+        results = JSON.parse(body).tracks.total;
+        if (results == 0) {}
+        else {
+          var returnedLink = JSON.parse(body).tracks.items[0].external_urls.spotify;
+          songLinks.push(returnedLink);
+        }
+      }
+      else {
+        console.log("Something went wrong when getting a link!");
+      }
+    });
+  }
+}
+*/
+
 // We make 5 search attempts. The end goal is to have 2 unique links to post, so 5 tries allows for a few duplicates or failed searches.
 function passTrack(authToken) {
   var results;
